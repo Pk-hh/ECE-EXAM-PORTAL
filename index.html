@@ -20,6 +20,9 @@
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
+    <!-- SheetJS (Excel .xlsx / .xls Parser) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
     <!-- Firebase SDK (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -102,6 +105,10 @@
                     <span class="hidden sm:inline">Fullscreen</span>
                 </button>
 
+                <button id="btn-open-admin" class="inline-flex items-center gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 shadow-md shadow-blue-600/25">
+                    <i class="fas fa-shield-alt text-blue-200 text-xs"></i>
+                    <span>Admin</span>
+                </button>
 
                 <div id="resume-alert" class="hidden inline-flex items-center gap-2 bg-emerald-500/15 border border-emerald-500/35 hover:bg-emerald-500/25 text-emerald-300 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm shadow-emerald-500/15 backdrop-blur-md">
                     <i class="fas fa-history text-emerald-400 animate-spin-slow"></i>
@@ -686,8 +693,8 @@
                             <p class="text-xs text-slate-400 mt-0.5">Create papers, edit questions, set per-question time limits & access</p>
                         </div>
                         <div class="flex items-center gap-2 flex-wrap">
-                            <button id="btn-admin-import-sheet" class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-md shadow-emerald-500/20">
-                                <i class="fas fa-file-excel"></i> Import from Google Sheets
+                            <button id="btn-admin-import-sheet" class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-750 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-md shadow-emerald-500/20">
+                                <i class="fas fa-file-excel"></i> Import from Excel / Sheets
                             </button>
                             <button id="btn-admin-add-paper" class="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-md shadow-blue-500/20">
                                 <i class="fas fa-plus"></i> New Paper
@@ -760,7 +767,7 @@
                         </div>
                         <div class="flex items-center gap-2 flex-wrap">
                             <button id="btn-admin-import-students" class="inline-flex items-center gap-1.5 bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-md shadow-pink-500/20">
-                                <i class="fas fa-file-excel"></i> Import Students Sheet
+                                <i class="fas fa-file-excel"></i> Import from Excel / Sheets
                             </button>
                             <button id="btn-admin-add-student" class="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition">
                                 <i class="fas fa-user-plus"></i> Add Student
@@ -983,13 +990,13 @@
         </div>
     </div>
 
-    <!-- Google Sheets & CSV Paper Import Modal -->
+    <!-- Excel, Google Sheets & CSV Paper Import Modal -->
     <div id="modal-sheet-import" class="hidden fixed inset-0 z-[90] flex items-center justify-center p-4 modal-backdrop bg-black/85">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl animate-scale-in text-white overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/80">
                 <div class="flex items-center gap-2">
                     <i class="fas fa-file-excel text-emerald-400 text-lg"></i>
-                    <h3 class="font-bold text-base">Import Paper from Google Sheets / CSV</h3>
+                    <h3 class="font-bold text-base">Import Paper from Excel (.xlsx / .xls) / Google Sheets / CSV</h3>
                 </div>
                 <button id="btn-close-sheet-import" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">&times;</button>
             </div>
@@ -999,14 +1006,17 @@
                 <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4">
                     <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
                         <div class="text-xs font-bold text-emerald-400 uppercase tracking-wide flex items-center gap-1.5">
-                            <i class="fas fa-table"></i> Google Sheets Column Structure
+                            <i class="fas fa-table"></i> Excel & Sheets Column Structure
                         </div>
-                        <div class="flex gap-2">
-                            <button id="btn-copy-sheet-template" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition">
-                                <i class="fas fa-copy mr-1 text-blue-400"></i> Copy Sample Data
+                        <div class="flex gap-2 flex-wrap">
+                            <button id="btn-dl-sheet-template-xlsx" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                                <i class="fas fa-file-excel"></i> Download Excel (.xlsx) Template
                             </button>
-                            <button id="btn-dl-sheet-template" class="px-3 py-1 bg-emerald-700/60 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition">
-                                <i class="fas fa-download mr-1"></i> Download CSV Template
+                            <button id="btn-dl-sheet-template" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition flex items-center gap-1">
+                                <i class="fas fa-download text-emerald-400"></i> Download CSV
+                            </button>
+                            <button id="btn-copy-sheet-template" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition flex items-center gap-1">
+                                <i class="fas fa-copy text-blue-400"></i> Copy Sample
                             </button>
                         </div>
                     </div>
@@ -1015,7 +1025,7 @@ Physics	MCQ	Section A	If force $F = ma$, what is the dimension of force?	$[MLT^{
 Physics	NUMERICAL	Section B	Calculate value of $\int_0^2 x^2 dx$ to nearest integer.						3	150		4	-1
 Chemistry	MCQ	Section A	Which of the following has highest electronegativity?	Fluorine	Chlorine	Bromine	Iodine	Fluorine	90		4	-1
 Mathematics	MCQ	Section A	Find roots of $x^2 - 5x + 6 = 0$.	$x=2, 3$	$x=1, 6$	$x=-2, -3$	$x=0, 5$	$x=2, 3$	150		4	-1</div>
-                    <p class="text-[11px] text-slate-400">Simply copy rows directly from your Google Sheet or Excel and paste into the box below. Supports image links (ImageURL) and custom marks (MarksCorrect, MarksNegative). Tab-separated, comma-separated (CSV), and semicolon formats are automatically detected.</p>
+                    <p class="text-[11px] text-slate-400">Upload your completed <strong>Excel file (.xlsx / .xls)</strong> below or copy-paste rows directly from Excel / Google Sheets.</p>
                 </div>
 
                 <!-- Paper Target Details -->
@@ -1030,10 +1040,25 @@ Mathematics	MCQ	Section A	Find roots of $x^2 - 5x + 6 = 0$.	$x=2, 3$	$x=1, 6$	$x
                     </div>
                 </div>
 
-                <!-- Paste Box -->
+                <!-- Option A: Direct Excel File Upload -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Paste Google Sheets / CSV Content</label>
-                    <textarea id="sheet-paste-area" rows="6" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-white outline-none focus:border-blue-500 font-mono" placeholder="Paste copied cells from Google Sheets here..."></textarea>
+                    <label class="block text-xs font-bold text-emerald-400 uppercase mb-1 flex items-center gap-1.5">
+                        <i class="fas fa-file-upload"></i> Option 1: Upload Excel (.xlsx / .xls) or CSV File
+                    </label>
+                    <div id="dropzone-paper-excel" class="border-2 border-dashed border-slate-750 hover:border-emerald-500 bg-slate-950/60 hover:bg-slate-900/60 rounded-2xl p-4 text-center cursor-pointer transition-all duration-200">
+                        <input type="file" id="paper-excel-file" accept=".xlsx, .xls, .csv" class="hidden">
+                        <div class="flex flex-col items-center justify-center gap-1.5 pointer-events-none">
+                            <i class="fas fa-cloud-upload-alt text-emerald-400 text-2xl mb-1"></i>
+                            <p class="text-xs font-bold text-slate-200">Click to choose or Drag & Drop Excel file (.xlsx / .xls / .csv)</p>
+                            <p class="text-[11px] text-slate-500" id="paper-file-name-display">Supports Microsoft Excel 2007+, Excel 97-2004, and standard CSV</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Option B: Paste Box -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Option 2: Or Paste Raw Cells from Google Sheets / Excel</label>
+                    <textarea id="sheet-paste-area" rows="4" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-white outline-none focus:border-blue-500 font-mono" placeholder="Paste copied cells from Google Sheets or Excel here..."></textarea>
                 </div>
 
                 <!-- Parser Status & Preview -->
@@ -1056,13 +1081,13 @@ Mathematics	MCQ	Section A	Find roots of $x^2 - 5x + 6 = 0$.	$x=2, 3$	$x=1, 6$	$x
         </div>
     </div>
 
-    <!-- Google Sheets & CSV Student Whitelist Import Modal -->
+    <!-- Excel, Google Sheets & CSV Student Whitelist Import Modal -->
     <div id="modal-student-import" class="hidden fixed inset-0 z-[90] flex items-center justify-center p-4 modal-backdrop bg-black/85">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-3xl max-h-[92vh] flex flex-col shadow-2xl animate-scale-in text-white overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/80">
                 <div class="flex items-center gap-2">
                     <i class="fas fa-users text-pink-400 text-lg"></i>
-                    <h3 class="font-bold text-base">Import Students from Google Sheets / CSV</h3>
+                    <h3 class="font-bold text-base">Import Students from Excel (.xlsx / .xls) / Google Sheets / CSV</h3>
                 </div>
                 <button id="btn-close-student-import" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">&times;</button>
             </div>
@@ -1071,11 +1096,16 @@ Mathematics	MCQ	Section A	Find roots of $x^2 - 5x + 6 = 0$.	$x=2, 3$	$x=1, 6$	$x
                 <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4">
                     <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
                         <div class="text-xs font-bold text-pink-400 uppercase tracking-wide flex items-center gap-1.5">
-                            <i class="fas fa-table"></i> Student Access Whitelist Format
+                            <i class="fas fa-table"></i> Student Whitelist Column Structure
                         </div>
-                        <button id="btn-copy-student-template" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition">
-                            <i class="fas fa-copy mr-1 text-pink-400"></i> Copy Sample Data
-                        </button>
+                        <div class="flex gap-2 flex-wrap">
+                            <button id="btn-dl-student-template-xlsx" class="px-3 py-1 bg-pink-600 hover:bg-pink-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                                <i class="fas fa-file-excel"></i> Download Excel (.xlsx)
+                            </button>
+                            <button id="btn-copy-student-template" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition flex items-center gap-1">
+                                <i class="fas fa-copy text-pink-400"></i> Copy Sample Data
+                            </button>
+                        </div>
                     </div>
                     <div class="sheet-template-box mb-2">CandidateID	CandidateName	AllowedPapers	Batch	Email
 JEE2026-001	Rahul Sharma	ALL	Batch-A	rahul@example.com
@@ -1084,9 +1114,25 @@ JEE2026-003	Amit Verma	1	Batch-B	amit@example.com</div>
                     <p class="text-[11px] text-slate-400">AllowedPapers can be <code>ALL</code> or comma-separated paper numbers (e.g. <code>1,2,3</code>).</p>
                 </div>
 
+                <!-- Option 1: Excel File Upload -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Paste Student Whitelist Cells</label>
-                    <textarea id="student-paste-area" rows="6" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-white outline-none focus:border-blue-500 font-mono" placeholder="Paste candidate rows from Google Sheets..."></textarea>
+                    <label class="block text-xs font-bold text-pink-400 uppercase mb-1 flex items-center gap-1.5">
+                        <i class="fas fa-file-upload"></i> Option 1: Upload Student Excel (.xlsx / .xls / .csv)
+                    </label>
+                    <div id="dropzone-student-excel" class="border-2 border-dashed border-slate-750 hover:border-pink-500 bg-slate-950/60 hover:bg-slate-900/60 rounded-2xl p-4 text-center cursor-pointer transition-all duration-200">
+                        <input type="file" id="student-excel-file" accept=".xlsx, .xls, .csv" class="hidden">
+                        <div class="flex flex-col items-center justify-center gap-1.5 pointer-events-none">
+                            <i class="fas fa-cloud-upload-alt text-pink-400 text-2xl mb-1"></i>
+                            <p class="text-xs font-bold text-slate-200">Click to choose or Drag & Drop Student Excel file</p>
+                            <p class="text-[11px] text-slate-500" id="student-file-name-display">Supports .xlsx, .xls, .csv</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Option 2: Paste Box -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Option 2: Or Paste Candidate Cells</label>
+                    <textarea id="student-paste-area" rows="4" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-white outline-none focus:border-blue-500 font-mono" placeholder="Paste candidate rows from Excel or Google Sheets..."></textarea>
                 </div>
 
                 <div id="student-parse-status" class="hidden p-3 rounded-xl text-xs font-medium"></div>

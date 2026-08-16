@@ -8680,7 +8680,43 @@
             }
         } catch (e) { }
         
-        grid.innerHTML = order.map((pid, index) => {
+        const cleanId = String(CURRENT_CANDIDATE_ID || '').trim().toUpperCase();
+
+        // Filter out papers the student has no access to
+        const accessibleOrder = order.filter(pid => {
+            // Admin always has access to all papers
+            if (cleanId === 'JEEPREMIUM' || cleanId === 'ADMIN' || cleanId === 'ADMIN123') return true;
+
+            // 1. Check student whitelist allowedPapers
+            if (studentAllowedPapers && !studentAllowedPapers.includes(String(pid))) {
+                return false;
+            }
+
+            // 2. Check paper-level WHITELIST restriction
+            const paperData = generatePaperByID(pid);
+            if (paperData.accessMode === 'WHITELIST') {
+                const allowed = (paperData.allowedCandidates || []).map(x => String(x).trim().toUpperCase());
+                if (allowed.length > 0 && !allowed.includes(cleanId)) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+
+        if (accessibleOrder.length === 0) {
+            grid.innerHTML = `
+            <div class="col-span-full py-16 text-center text-slate-400 bg-slate-900/40 border border-slate-800/80 rounded-3xl p-8 backdrop-blur-md">
+                <div class="w-14 h-14 rounded-2xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-center mx-auto mb-3 text-slate-400 shadow-lg">
+                    <i class="fas fa-lock text-xl text-amber-400"></i>
+                </div>
+                <h4 class="text-white font-bold text-base mb-1">No Tests Assigned</h4>
+                <p class="text-xs text-slate-400 max-w-md mx-auto">There are currently no mock exams assigned to Candidate ID <span class="text-blue-300 font-mono font-bold">${cleanId || 'GUEST'}</span>. Please contact your examination coordinator for access.</p>
+            </div>`;
+            return;
+        }
+
+        grid.innerHTML = accessibleOrder.map((pid, index) => {
             const prev = history[pid] || history[String(pid)];
             const displayNum = pid;
             const paperData = generatePaperByID(pid);
@@ -8705,41 +8741,14 @@
 
             const marksLabel = `+${defaultPos} / ${defaultNeg >= 0 ? '+' : ''}${defaultNeg} Marking`;
 
-            // Check if this student is restricted from this paper
-            const isStudentLocked = studentAllowedPapers && !studentAllowedPapers.includes(String(pid));
-
             let accessBadge = '';
-            if (isStudentLocked) {
-                accessBadge = '<span class="badge-access-whitelist text-[10px] font-bold px-2 py-0.5 rounded-full"><i class="fas fa-lock mr-1"></i>No Access</span>';
-            } else if (accessMode === 'PIN_PROTECTED') {
+            if (accessMode === 'PIN_PROTECTED') {
                 accessBadge = '<span class="badge-access-pin text-[10px] font-bold px-2 py-0.5 rounded-full"><i class="fas fa-key mr-1"></i>PIN</span>';
             } else if (accessMode === 'WHITELIST') {
                 accessBadge = '<span class="badge-access-whitelist text-[10px] font-bold px-2 py-0.5 rounded-full"><i class="fas fa-user-lock mr-1"></i>Restricted</span>';
             }
 
-            if (isStudentLocked) {
-                // Render a locked/greyed-out card — not clickable
-                return `
-                <div class="paper-card p-4 relative flex flex-col justify-between opacity-40 cursor-not-allowed select-none" style="filter:grayscale(1)">
-                    <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="tag-unlocked" style="background:rgba(100,116,139,0.2);color:#64748b"><i class="fas fa-lock mr-1"></i>LOCKED</span>
-                            <div class="flex items-center gap-1">
-                                ${accessBadge}
-                                <span class="text-[10px] text-slate-500 font-mono">Paper ${displayNum}</span>
-                            </div>
-                        </div>
-                        <h3 class="text-slate-400 text-base font-bold mb-1">${paperData.title || ('Mock Exam ' + displayNum)}</h3>
-                        <p class="text-slate-600 text-xs mb-3 font-normal">Not available for your account</p>
-                        <div class="flex gap-1.5 mb-4">
-                            <span class="subj-pill">Physics</span>
-                            <span class="subj-pill">Chemistry</span>
-                            <span class="subj-pill">Maths</span>
-                        </div>
-                    </div>
-                    <button class="btn-start-test" disabled style="opacity:0.4;cursor:not-allowed"><i class="fas fa-lock mr-1.5 text-xs"></i>Access Denied</button>
-                </div>`;
-            } else if (prev) {
+            if (prev) {
                 const maxDisplay = prev.maxScore || paperMaxMarks;
                 return `
                 <div class="paper-card paper-card-completed p-4 relative group shadow-lg flex flex-col justify-between" data-pid="${pid}">
@@ -9642,7 +9651,7 @@
             };
         }
 
-        // --- Google Sheets Paper Importer ---
+        // --- Excel & Sheets Paper Importer ---
         const btnImportSheet = document.getElementById('btn-admin-import-sheet');
         if (btnImportSheet) {
             btnImportSheet.onclick = openSheetImportModal;
@@ -9660,13 +9669,33 @@
         const btnDlSheetTpl = document.getElementById('btn-dl-sheet-template');
         if (btnDlSheetTpl) btnDlSheetTpl.onclick = downloadSheetTemplateCSV;
 
+        const btnDlSheetTplXlsx = document.getElementById('btn-dl-sheet-template-xlsx');
+        if (btnDlSheetTplXlsx) btnDlSheetTplXlsx.onclick = downloadSheetTemplateXLSX;
+
+        // Paper Excel Dropzone & File Input
+        const dropzonePaper = document.getElementById('dropzone-paper-excel');
+        const fileInputPaper = document.getElementById('paper-excel-file');
+        if (dropzonePaper && fileInputPaper) {
+            dropzonePaper.onclick = () => fileInputPaper.click();
+            fileInputPaper.onchange = (e) => {
+                if (e.target.files && e.target.files[0]) handlePaperExcelUpload(e.target.files[0]);
+            };
+            dropzonePaper.ondragover = (e) => { e.preventDefault(); dropzonePaper.classList.add('border-emerald-500', 'bg-slate-900/90'); };
+            dropzonePaper.ondragleave = () => { dropzonePaper.classList.remove('border-emerald-500', 'bg-slate-900/90'); };
+            dropzonePaper.ondrop = (e) => {
+                e.preventDefault();
+                dropzonePaper.classList.remove('border-emerald-500', 'bg-slate-900/90');
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) handlePaperExcelUpload(e.dataTransfer.files[0]);
+            };
+        }
+
         const btnParseSheet = document.getElementById('btn-parse-sheet');
         if (btnParseSheet) btnParseSheet.onclick = previewParsedSheet;
 
         const btnSaveSheet = document.getElementById('btn-save-sheet-import');
         if (btnSaveSheet) btnSaveSheet.onclick = saveSheetImport;
 
-        // --- Google Sheets Student Whitelist Importer ---
+        // --- Excel & Sheets Student Whitelist Importer ---
         const btnImportStudents = document.getElementById('btn-admin-import-students');
         if (btnImportStudents) btnImportStudents.onclick = () => document.getElementById('modal-student-import').classList.remove('hidden');
 
@@ -9678,6 +9707,26 @@
 
         const btnCopyStudTpl = document.getElementById('btn-copy-student-template');
         if (btnCopyStudTpl) btnCopyStudTpl.onclick = copyStudentTemplate;
+
+        const btnDlStudTplXlsx = document.getElementById('btn-dl-student-template-xlsx');
+        if (btnDlStudTplXlsx) btnDlStudTplXlsx.onclick = downloadStudentTemplateXLSX;
+
+        // Student Excel Dropzone & File Input
+        const dropzoneStudent = document.getElementById('dropzone-student-excel');
+        const fileInputStudent = document.getElementById('student-excel-file');
+        if (dropzoneStudent && fileInputStudent) {
+            dropzoneStudent.onclick = () => fileInputStudent.click();
+            fileInputStudent.onchange = (e) => {
+                if (e.target.files && e.target.files[0]) handleStudentExcelUpload(e.target.files[0]);
+            };
+            dropzoneStudent.ondragover = (e) => { e.preventDefault(); dropzoneStudent.classList.add('border-pink-500', 'bg-slate-900/90'); };
+            dropzoneStudent.ondragleave = () => { dropzoneStudent.classList.remove('border-pink-500', 'bg-slate-900/90'); };
+            dropzoneStudent.ondrop = (e) => {
+                e.preventDefault();
+                dropzoneStudent.classList.remove('border-pink-500', 'bg-slate-900/90');
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) handleStudentExcelUpload(e.dataTransfer.files[0]);
+            };
+        }
 
         const btnSaveStudImp = document.getElementById('btn-save-student-import');
         if (btnSaveStudImp) btnSaveStudImp.onclick = saveStudentImport;
@@ -10317,6 +10366,24 @@ Mathematics\tMCQ\tSection A\tFind roots of $x^2 - 5x + 6 = 0$.\t$x=2, 3$\t$x=1, 
         });
     }
 
+    function downloadSheetTemplateXLSX() {
+        if (typeof XLSX === 'undefined') {
+            downloadSheetTemplateCSV();
+            return;
+        }
+        const data = [
+            ["Subject", "Type", "Section", "Question", "OptionA", "OptionB", "OptionC", "OptionD", "CorrectAnswer", "TimeSeconds", "ImageURL", "MarksCorrect", "MarksNegative"],
+            ["Physics", "MCQ", "Section A", "If force F = ma, what is the dimension of force?", "[MLT^{-2}]", "[MLT^{-1}]", "[ML^2T^{-2}]", "[M^0LT^{-2}]", "[MLT^{-2}]", 120, "https://i.imgur.com/example.png", 4, -1],
+            ["Physics", "NUMERICAL", "Section B", "Calculate value of \\int_0^2 x^2 dx to nearest integer.", "", "", "", "", "3", 150, "", 4, -1],
+            ["Chemistry", "MCQ", "Section A", "Which of the following has highest electronegativity?", "Fluorine", "Chlorine", "Bromine", "Iodine", "Fluorine", 90, "", 4, -1],
+            ["Mathematics", "MCQ", "Section A", "Find roots of x^2 - 5x + 6 = 0.", "x=2, 3", "x=1, 6", "x=-2, -3", "x=0, 5", "x=2, 3", 150, "", 4, -1]
+        ];
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Questions");
+        XLSX.writeFile(wb, "jee_mock_paper_template.xlsx");
+    }
+
     function downloadSheetTemplateCSV() {
         const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(
 `Subject,Type,Section,Question,OptionA,OptionB,OptionC,OptionD,CorrectAnswer,TimeSeconds,ImageURL,MarksCorrect,MarksNegative
@@ -10331,6 +10398,42 @@ Mathematics,MCQ,Section A,"Find roots of x^2 - 5x + 6 = 0.","x=2, 3","x=1, 6","x
         document.body.appendChild(a);
         a.click();
         a.remove();
+    }
+
+    function handlePaperExcelUpload(file) {
+        if (!file) return;
+        const nameDisplay = document.getElementById('paper-file-name-display');
+        if (nameDisplay) nameDisplay.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fas fa-check-circle mr-1"></i>Loaded: ${file.name} (${(file.size / 1024).toFixed(1)} KB)</span>`;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                if (file.name.endsWith('.csv') || file.name.endsWith('.txt')) {
+                    const text = e.target.result;
+                    document.getElementById('sheet-paste-area').value = text;
+                    previewParsedSheet();
+                } else if (typeof XLSX !== 'undefined') {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const csvText = XLSX.utils.sheet_to_csv(worksheet, { FS: '\t' });
+                    document.getElementById('sheet-paste-area').value = csvText;
+                    previewParsedSheet();
+                } else {
+                    alert("SheetJS library is still loading, please retry in a moment.");
+                }
+            } catch(err) {
+                console.error("Error reading Excel file:", err);
+                alert("Failed to parse Excel file. Please ensure it is a valid .xlsx, .xls, or .csv file.");
+            }
+        };
+
+        if (file.name.endsWith('.csv') || file.name.endsWith('.txt')) {
+            reader.readAsText(file);
+        } else {
+            reader.readAsArrayBuffer(file);
+        }
     }
 
     function parseSheetText(rawText) {
@@ -10484,6 +10587,69 @@ JEE2026-003\tAmit Verma\t1\tBatch-B\tamit@example.com`;
         navigator.clipboard.writeText(sample).then(() => {
             alert("Sample Student Whitelist template copied to clipboard!");
         });
+    }
+
+    function downloadStudentTemplateXLSX() {
+        if (typeof XLSX === 'undefined') {
+            copyStudentTemplate();
+            return;
+        }
+        const data = [
+            ["CandidateID", "CandidateName", "AllowedPapers", "Batch", "Email"],
+            ["JEE2026-001", "Rahul Sharma", "ALL", "Batch-A", "rahul@example.com"],
+            ["JEE2026-002", "Priya Patel", "1,2,3", "Batch-A", "priya@example.com"],
+            ["JEE2026-003", "Amit Verma", "1", "Batch-B", "amit@example.com"]
+        ];
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Students");
+        XLSX.writeFile(wb, "student_whitelist_template.xlsx");
+    }
+
+    function handleStudentExcelUpload(file) {
+        if (!file) return;
+        const nameDisplay = document.getElementById('student-file-name-display');
+        if (nameDisplay) nameDisplay.innerHTML = `<span class="text-pink-400 font-bold"><i class="fas fa-check-circle mr-1"></i>Loaded: ${file.name} (${(file.size / 1024).toFixed(1)} KB)</span>`;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                if (file.name.endsWith('.csv') || file.name.endsWith('.txt')) {
+                    const text = e.target.result;
+                    document.getElementById('student-paste-area').value = text;
+                    const students = parseStudentText(text);
+                    const statusBox = document.getElementById('student-parse-status');
+                    if (statusBox) {
+                        statusBox.className = "p-3 rounded-xl text-xs font-medium bg-pink-950/50 border border-pink-800 text-pink-300";
+                        statusBox.innerHTML = `<strong>Loaded ${students.length} students</strong> from ${file.name}. Click "Save Whitelist" to persist.`;
+                        statusBox.classList.remove('hidden');
+                    }
+                } else if (typeof XLSX !== 'undefined') {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const csvText = XLSX.utils.sheet_to_csv(worksheet, { FS: '\t' });
+                    document.getElementById('student-paste-area').value = csvText;
+                    const students = parseStudentText(csvText);
+                    const statusBox = document.getElementById('student-parse-status');
+                    if (statusBox) {
+                        statusBox.className = "p-3 rounded-xl text-xs font-medium bg-pink-950/50 border border-pink-800 text-pink-300";
+                        statusBox.innerHTML = `<strong>Loaded ${students.length} students</strong> from ${file.name}. Click "Save Whitelist" to persist.`;
+                        statusBox.classList.remove('hidden');
+                    }
+                }
+            } catch(err) {
+                console.error("Error reading Student Excel file:", err);
+                alert("Failed to parse Excel file. Please ensure it is a valid .xlsx, .xls, or .csv file.");
+            }
+        };
+
+        if (file.name.endsWith('.csv') || file.name.endsWith('.txt')) {
+            reader.readAsText(file);
+        } else {
+            reader.readAsArrayBuffer(file);
+        }
     }
 
     function parseStudentText(rawText) {
