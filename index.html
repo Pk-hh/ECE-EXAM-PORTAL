@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>JEE Mains 2026 — Mock Exam Platform</title>
+
+    <!-- Security: Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src https://fonts.gstatic.com https://cdnjs.cloudflare.com; connect-src 'self' https: wss:; img-src 'self' data: https:;">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- KaTeX (Math Rendering) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <!-- Firebase SDK (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <link href="styles/main.css" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    },
+                    colors: {
+                        jee: {
+                            green:  '#22c55e',
+                            red:    '#ef4444',
+                            gray:   '#e5e7eb',
+                            purple: '#a855f7',
+                            blue:   '#2563eb'
+                        }
+                    },
+                    animation: {
+                        'pulse-fast':  'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'spin-slow':   'spin 3s linear infinite',
+                        'fade-in-down':'fadeInDown 0.5s ease both',
+                        'fade-in-up':  'fadeInUp 0.4s ease both',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="text-gray-800" oncontextmenu="return false;">
+
+<!-- Security overlay -->
+<div id="security-shield"></div>
+
+<div id="app-root">
+
+    <!-- ══════════════════════════════════════════════
+         SCREEN 1: PAPER SELECTION (STUDENT HOME)
+    ══════════════════════════════════════════════ -->
+    <div id="screen-setup" class="absolute inset-0 z-50 flex flex-col items-center justify-start overflow-y-auto custom-scroll w-full h-full text-slate-100 select-none">
+
+        <!-- Ambient Glow Backdrops -->
+        <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[750px] h-[360px] bg-gradient-to-b from-blue-600/15 via-indigo-600/10 to-transparent blur-3xl pointer-events-none rounded-full"></div>
+        <div class="fixed top-1/3 right-10 w-[400px] h-[400px] bg-purple-600/5 blur-3xl pointer-events-none rounded-full"></div>
+
+        <!-- Sticky Top Navigation Bar -->
+        <header class="w-full max-w-7xl mx-auto px-4 md:px-8 pt-5 pb-3 flex items-center justify-between gap-3 shrink-0 relative z-20">
+            <!-- Brand -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 p-0.5 shadow-lg shadow-blue-500/25 flex items-center justify-center">
+                    <div class="w-full h-full bg-slate-950/40 rounded-[10px] flex items-center justify-center backdrop-blur-xs">
+                        <i class="fas fa-graduation-cap text-blue-300 text-lg"></i>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-base md:text-lg font-black tracking-tight text-white flex items-center gap-2">
+                        GIITS <span class="text-xs px-2 py-0.5 rounded-md bg-blue-500/15 text-blue-400 border border-blue-500/20 font-bold uppercase tracking-wider">ECE PORTAL</span>
+                    </h1>
+                    <p class="text-[11px] text-slate-400 font-medium">Standardized Examination Platform</p>
+                </div>
+            </div>
+
+            <!-- Action Controls -->
+            <div class="flex items-center gap-2 flex-wrap justify-end">
+                <button id="btn-candidate-badge" class="inline-flex items-center gap-2 bg-slate-850/90 border border-slate-750 hover:border-blue-500/50 hover:bg-slate-800 text-slate-200 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 shadow-sm backdrop-blur-md cursor-pointer group">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/80 animate-pulse"></span>
+                    <span class="text-slate-400 font-medium">ID:</span>
+                    <span id="display-candidate-id" class="text-blue-300 font-mono font-bold group-hover:text-blue-200">JEEPREMIUM</span>
+                    <i class="fas fa-pencil-alt text-[10px] text-slate-500 group-hover:text-slate-300 transition-colors"></i>
+                </button>
+
+                <button id="btn-go-fullscreen" class="inline-flex items-center gap-1.5 bg-slate-850/90 border border-slate-750 hover:border-slate-600 hover:bg-slate-800 text-slate-300 hover:text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 shadow-sm backdrop-blur-md">
+                    <i class="fas fa-expand text-blue-400 text-[11px]"></i>
+                    <span class="hidden sm:inline">Fullscreen</span>
+                </button>
+
+                <button id="btn-open-admin" class="inline-flex items-center gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 shadow-md shadow-blue-600/25">
+                    <i class="fas fa-shield-alt text-blue-200 text-xs"></i>
+                    <span>Admin</span>
+                </button>
+
+                <div id="resume-alert" class="hidden inline-flex items-center gap-2 bg-emerald-500/15 border border-emerald-500/35 hover:bg-emerald-500/25 text-emerald-300 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm shadow-emerald-500/15 backdrop-blur-md">
+                    <i class="fas fa-history text-emerald-400 animate-spin-slow"></i>
+                    <span>Resume Attempt</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="w-full max-w-7xl mx-auto px-4 md:px-8 pt-4 pb-6 relative z-10 shrink-0">
+            <div class="bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-slate-900/90 border border-slate-800/90 rounded-3xl p-6 md:p-8 backdrop-blur-xl shadow-2xl relative overflow-hidden">
+                <!-- Inner decorative flare -->
+                <div class="absolute -right-16 -top-16 w-56 h-56 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="absolute -left-16 -bottom-16 w-56 h-56 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 relative z-10">
+                    <div class="max-w-2xl">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-3">
+                            <i class="fas fa-bolt text-[10px]"></i> Active Mock Series 2026
+                        </div>
+                        <h2 class="text-2xl md:text-4xl font-black text-white tracking-tight leading-tight mb-2">
+                            Advanced Mock Test Portal
+                        </h2>
+                        <p class="text-slate-400 text-xs md:text-sm font-normal leading-relaxed">
+                            Simulate national-level testing conditions with live pacing analytics, strict anti-cheating proctoring, KaTeX mathematical typesetting, and instant diagnostics.
+                        </p>
+                    </div>
+
+                    <!-- Meta specs strip -->
+                    <div class="grid grid-cols-3 gap-2.5 sm:gap-4 shrink-0 bg-slate-950/60 border border-slate-800/80 p-3 sm:p-4 rounded-2xl">
+                        <div class="text-center px-2">
+                            <div class="text-lg md:text-xl font-black text-blue-400 font-mono"></div>
+                            <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider mt-0.5"></div>
+                        </div>
+                        <div class="text-center px-2 border-x border-slate-800">
+                            <div class="text-lg md:text-xl font-black text-indigo-400 font-mono"></div>
+                            <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider mt-0.5"></div>
+                        </div>
+                        <div class="text-center px-2">
+                            <div class="text-lg md:text-xl font-black text-emerald-400 font-mono"></div>
+                            <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider mt-0.5"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section Title & Grid -->
+        <main class="w-full max-w-7xl mx-auto px-4 md:px-8 pb-16 relative z-10">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <i class="fas fa-layer-group text-blue-400"></i> Available Mock Papers
+                </h3>
+                <span class="text-[11px] text-slate-500 font-medium">Click any paper to begin instructions</span>
+            </div>
+
+            <!-- Paper Grid (injected by JS) -->
+            <div id="paper-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5 w-full">
+                <!-- Injected via JS -->
+            </div>
+        </main>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════
+         SCREEN 2: INSTRUCTIONS
+    ══════════════════════════════════════════════ -->
+    <div id="screen-instructions" class="hidden fixed inset-0 z-[60] bg-white flex flex-col w-full h-full">
+
+        <header class="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-4 shadow-lg flex justify-between items-center shrink-0 h-14 border-b border-white/5">
+            <div class="flex items-center gap-3">
+                <div class="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-file-alt text-white text-xs"></i>
+                </div>
+                <h2 class="text-base font-bold">Exam Instructions</h2>
+            </div>
+            <button id="btn-close-inst" class="text-slate-400 hover:text-white transition w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10">
+                <i class="fas fa-times"></i>
+            </button>
+        </header>
+
+        <div class="flex-1 overflow-y-auto custom-scroll p-5 md:p-8 max-w-3xl mx-auto w-full">
+
+            <!-- Paper name -->
+            <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6 flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
+                    <i class="fas fa-scroll text-blue-600"></i>
+                </div>
+                <div>
+                    <div class="text-xs text-blue-500 font-semibold uppercase tracking-wide">Selected Paper</div>
+                    <div class="font-bold text-blue-900 text-base" id="inst-paper-name"></div>
+                </div>
+            </div>
+
+            <!-- Paper info -->
+            <h3 class="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2">
+                <i class="fas fa-info-circle text-blue-500"></i> Paper Configuration
+            </h3>
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                    <div class="text-[10px] text-gray-400 uppercase font-semibold mb-1">Total Questions</div>
+                    <div class="text-xl font-black text-gray-800" id="inst-total-q">90</div>
+                    <div class="text-xs text-gray-500" id="inst-q-breakdown">30 per subject</div>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                    <div class="text-[10px] text-gray-400 uppercase font-semibold mb-1">Duration</div>
+                    <div class="text-xl font-black text-gray-800" id="inst-duration-display">3 hrs</div>
+                    <div class="text-xs text-gray-500" id="inst-duration-sub">180 minutes</div>
+                </div>
+                <div class="bg-green-50 rounded-xl p-3 border border-green-100">
+                    <div class="text-[10px] text-green-600 uppercase font-semibold mb-1">Correct Answer</div>
+                    <div class="text-xl font-black text-green-600" id="inst-marks-correct">+4</div>
+                    <div class="text-xs text-green-500" id="inst-marks-correct-sub">per question</div>
+                </div>
+                <div class="bg-red-50 rounded-xl p-3 border border-red-100">
+                    <div class="text-[10px] text-red-500 uppercase font-semibold mb-1">Wrong Answer</div>
+                    <div class="text-xl font-black text-red-500" id="inst-marks-negative">−1</div>
+                    <div class="text-xs text-red-400" id="inst-marks-negative-sub">per wrong answer</div>
+                </div>
+            </div>
+
+            <!-- Proctoring rules -->
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="w-7 h-7 bg-red-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-shield-alt text-red-600 text-xs"></i>
+                    </div>
+                    <p class="font-bold text-red-700 text-sm">STRICT PROCTORING ENABLED</p>
+                </div>
+                <ul class="space-y-2">
+                    <li class="flex items-start gap-2 text-sm text-red-700">
+                        <i class="fas fa-exclamation-circle mt-0.5 shrink-0 text-red-400"></i>
+                        <span>Fullscreen mode is <strong>mandatory</strong> throughout the exam.</span>
+                    </li>
+                    <li class="flex items-start gap-2 text-sm text-red-700">
+                        <i class="fas fa-exclamation-circle mt-0.5 shrink-0 text-red-400"></i>
+                        <span>Tab switching or minimizing is logged as a <strong>violation</strong>.</span>
+                    </li>
+                    <li class="flex items-start gap-2 text-sm text-red-700">
+                        <i class="fas fa-exclamation-circle mt-0.5 shrink-0 text-red-400"></i>
+                        <span>Right-click, Copy/Paste, and keyboard shortcuts are <strong>disabled</strong>.</span>
+                    </li>
+                    <li class="flex items-start gap-2 text-sm text-red-700">
+                        <i class="fas fa-exclamation-circle mt-0.5 shrink-0 text-red-400"></i>
+                        <span>3 violations will trigger <strong>auto-submission</strong>.</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Note -->
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2 text-xs text-amber-800">
+                <i class="fas fa-random text-amber-500 mt-0.5 shrink-0"></i>
+                <span><strong>Note:</strong> Questions are randomized within each subject section for exam security.</span>
+            </div>
+        </div>
+
+        <div class="p-4 border-t bg-gray-50 flex items-center justify-between gap-3 shrink-0">
+            <button id="btn-close-inst-bottom" class="px-5 py-2.5 text-sm font-semibold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition">
+                <i class="fas fa-arrow-left mr-2"></i>Go Back
+            </button>
+            <button id="btn-start-exam" class="flex-1 md:flex-none px-10 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all duration-200 text-sm">
+                <i class="fas fa-play mr-2"></i>Start Exam
+            </button>
+        </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════
+         SCREEN 3: EXAM INTERFACE
+    ══════════════════════════════════════════════ -->
+    <div id="screen-exam" class="hidden flex-col h-full w-full relative">
+
+        <!-- Header -->
+        <header class="exam-header text-white h-12 md:h-14 flex items-center justify-between px-3 md:px-5 shadow-lg shrink-0 z-50 compact-header">
+            <div class="flex items-center space-x-2 md:space-x-3 overflow-hidden">
+                <!-- Logo -->
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
+                        <i class="fas fa-graduation-cap text-white text-xs"></i>
+                    </div>
+                    <div class="font-black text-sm md:text-base tracking-wide whitespace-nowrap">
+                        <span class="text-blue-400">JEE</span> Mock
+                    </div>
+                </div>
+
+                <div class="hidden md:block h-5 w-px bg-slate-600/50"></div>
+                <div id="exam-name-display" class="hidden md:block text-xs text-slate-400 truncate max-w-[180px] font-medium">Paper 1</div>
+
+                <!-- Live indicator -->
+                <div class="flex items-center gap-1.5 bg-red-900/40 border border-red-500/30 px-2 py-1 rounded-full text-[10px] text-red-300">
+                    <span class="relative flex h-1.5 w-1.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
+                    </span>
+                    <span class="hidden sm:inline font-semibold">SECURE</span>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2 md:space-x-3">
+                <!-- Question Pace Timer Widget -->
+                <div id="q-pace-widget" class="hidden sm:inline-flex pace-timer-widget pace-timer-normal">
+                    <i class="fas fa-stopwatch text-sky-400"></i>
+                    <span>Q Time: <strong id="q-pace-time" class="font-mono text-white">00:00</strong></span>
+                    <span class="text-slate-400 font-mono text-[10px]" id="q-target-time">/ 2:00</span>
+                </div>
+
+                <!-- Timer -->
+                <div class="flex items-center gap-2 bg-slate-800/80 border border-slate-600/50 px-3 py-1.5 rounded-xl">
+                    <i class="far fa-clock text-blue-400 text-xs"></i>
+                    <span id="timer-display" class="font-mono text-sm md:text-lg font-bold tracking-wider">00:00:00</span>
+                </div>
+
+                <!-- Desktop tools -->
+                <div class="hidden md:flex items-center gap-1">
+                    <button id="btn-toggle-calc" class="w-8 h-8 flex items-center justify-center hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white transition" title="Scientific Calculator">
+                        <i class="fas fa-calculator text-sm"></i>
+                    </button>
+                    <button id="btn-show-qp" class="w-8 h-8 flex items-center justify-center hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white transition" title="Question Paper">
+                        <i class="fas fa-file-alt text-sm"></i>
+                    </button>
+                    <div class="flex text-xs bg-slate-800 rounded-lg border border-slate-600/50 overflow-hidden">
+                        <button id="btn-font-dec" class="px-2 py-1 hover:bg-slate-700 border-r border-slate-600/50 transition font-bold text-slate-300">A−</button>
+                        <button id="btn-font-inc" class="px-2 py-1 hover:bg-slate-700 transition font-bold text-slate-300">A+</button>
+                    </div>
+                </div>
+
+                <!-- Mobile actions -->
+                <button id="btn-mobile-menu" class="md:hidden w-8 h-8 flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition">
+                    <i class="fas fa-ellipsis-v text-sm"></i>
+                </button>
+                <button id="btn-palette-mob" class="md:hidden w-8 h-8 flex items-center justify-center hover:bg-blue-700 text-white bg-blue-600 rounded-lg transition">
+                    <i class="fas fa-th text-sm"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Mobile Menu dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden bg-slate-800 border-b border-slate-700 text-white p-2 flex justify-around z-40 absolute top-12 left-0 right-0 shadow-xl">
+            <button id="btn-mob-calc" class="flex flex-col items-center gap-1 px-4 py-2 rounded-lg hover:bg-slate-700 text-[11px] text-slate-300 transition">
+                <i class="fas fa-calculator"></i> Calc
+            </button>
+            <button id="btn-mob-qp" class="flex flex-col items-center gap-1 px-4 py-2 rounded-lg hover:bg-slate-700 text-[11px] text-slate-300 transition">
+                <i class="fas fa-file-alt"></i> Paper
+            </button>
+        </div>
+
+        <!-- Workspace -->
+        <div class="flex flex-1 overflow-hidden relative z-0">
+            <div id="exam-watermark" class="watermark-container"></div>
+            <div id="palette-backdrop" class="hidden md:hidden drawer-backdrop"></div>
+
+            <!-- Main question area -->
+            <main class="flex-1 flex flex-col bg-white overflow-hidden relative w-full z-10" id="exam-main-area">
+
+                <!-- Subject tabs -->
+                <div class="bg-gray-50 border-b border-gray-200 px-2 md:px-4 py-2 flex items-center space-x-1.5 overflow-x-auto no-scrollbar shrink-0" id="subject-tabs"></div>
+
+                <!-- Question header bar -->
+                <div class="px-3 md:px-5 py-2 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
+                    <div class="flex flex-col gap-0.5">
+                        <div class="flex items-center gap-2">
+                            <span class="font-black text-sm md:text-lg text-gray-900">
+                                Q.<span id="q-num" class="text-blue-600">1</span>
+                            </span>
+                            <span id="q-type-badge" class="text-[10px] md:text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 uppercase tracking-wide">MCQ</span>
+                        </div>
+                        <div id="section-badge" class="section-a-badge self-start">Section A</div>
+                    </div>
+                    <div class="flex items-center gap-3 text-xs md:text-sm font-semibold">
+                        <div class="flex items-center gap-1 text-green-600">
+                            <i class="fas fa-plus text-[10px]"></i><span>4</span>
+                        </div>
+                        <div class="h-3 w-px bg-gray-200"></div>
+                        <div class="flex items-center gap-1 text-red-500">
+                            <i class="fas fa-minus text-[10px]"></i><span>1</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question + Options -->
+                <div class="flex-1 overflow-y-auto custom-scroll p-3 md:p-6 relative" id="question-area">
+                    <!-- Per-question marks badge -->
+                    <div id="q-marks-badge" class="hidden mb-3 flex items-center gap-2 text-xs">
+                        <span id="q-marks-correct-badge" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-green-50 border border-green-200 text-green-700 font-bold"><i class="fas fa-plus text-[10px]"></i><span id="q-marks-correct-val">4</span> Correct</span>
+                        <span id="q-marks-negative-badge" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-50 border border-red-200 text-red-600 font-bold"><i class="fas fa-minus text-[10px]"></i><span id="q-marks-negative-val">1</span> Wrong</span>
+                    </div>
+                    <div id="question-text"
+                         class="text-sm md:text-base leading-relaxed text-gray-800 mb-4 md:mb-5 break-words select-none overflow-x-auto"
+                         oncopy="return false;" oncut="return false;"></div>
+                    <!-- Question image (shown only if imageUrl is set) -->
+                    <div id="q-image-wrap" class="hidden mb-5">
+                        <img id="q-image" src="" alt="Question Image"
+                             class="max-w-full max-h-72 rounded-xl border border-gray-200 shadow-sm cursor-zoom-in object-contain bg-gray-50"
+                             onclick="document.getElementById('lightbox-img').src=this.src; document.getElementById('lightbox-modal').classList.remove('hidden');">
+                        <div class="text-[10px] text-gray-400 mt-1 text-center"><i class="fas fa-search-plus mr-1"></i>Tap image to enlarge</div>
+                    </div>
+                    <div id="options-area" class="space-y-2.5 max-w-3xl select-none pb-2"></div>
+                </div>
+
+                <!-- Footer nav -->
+                <div class="h-14 md:h-16 bg-gray-50 border-t border-gray-200 flex items-center justify-between px-3 md:px-5 shrink-0 z-10 compact-footer gap-2">
+                    <div class="flex gap-2">
+                        <button id="btn-clear" class="px-3 md:px-4 py-1.5 text-xs md:text-sm font-semibold text-gray-600 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all">
+                            <i class="fas fa-eraser mr-1 text-gray-400"></i>Clear
+                        </button>
+                        <button id="btn-review" class="px-3 md:px-4 py-1.5 text-xs md:text-sm font-semibold text-white bg-purple-600 rounded-xl hover:bg-purple-700 transition-all shadow-sm shadow-purple-500/20">
+                            <i class="fas fa-bookmark mr-1"></i>Review
+                        </button>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="btn-prev" class="px-3 md:px-4 py-1.5 text-xs md:text-sm font-semibold text-gray-600 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-all">
+                            <i class="fas fa-chevron-left mr-1"></i>Prev
+                        </button>
+                        <button id="btn-next" class="px-4 md:px-6 py-1.5 text-xs md:text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-md shadow-blue-500/25 transition-all">
+                            Next <i class="fas fa-chevron-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Question Palette sidebar -->
+            <aside id="palette-sidebar" class="absolute inset-y-0 right-0 w-72 md:w-80 bg-white border-l border-gray-200 flex flex-col z-50 transform translate-x-full md:translate-x-0 md:relative md:flex transition-transform duration-300 shadow-2xl md:shadow-none h-full">
+
+                <!-- Candidate info -->
+                <div class="p-3 md:p-4 border-b border-gray-100 bg-gradient-to-r from-slate-50 to-blue-50/30 flex items-center gap-3 shrink-0">
+                    <div class="h-9 w-9 md:h-10 md:w-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-black text-sm shadow-md shadow-blue-500/25">
+                        U
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs md:text-sm font-bold text-gray-900">Candidate</div>
+                        <div class="text-[10px] text-gray-400 font-medium">ID: JEEPREMIUM</div>
+                    </div>
+                    <button id="btn-close-palette" class="ml-auto md:hidden w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- Legend -->
+                <div class="px-3 py-2 border-b border-gray-100 bg-white shrink-0">
+                    <div class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[10px] text-gray-600">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-4 h-4 rounded bg-green-500 shrink-0 shadow-sm"></span>
+                            <span class="font-medium">Answered</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-4 h-4 rounded bg-red-500 shrink-0 shadow-sm"></span>
+                            <span class="font-medium">Not Answered</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-4 h-4 rounded border border-gray-300 bg-gray-100 shrink-0"></span>
+                            <span class="font-medium">Not Visited</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-4 h-4 rounded-full bg-purple-500 shrink-0 shadow-sm"></span>
+                            <span class="font-medium">Marked</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Palette grid -->
+                <div class="flex-1 overflow-y-auto custom-scroll p-3 md:p-4 bg-slate-50/50">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="font-bold text-gray-700 text-xs uppercase tracking-wide" id="palette-section-title">Physics</h3>
+                        <span id="palette-stats" class="text-[10px] text-gray-400 font-medium"></span>
+                    </div>
+                    <div id="question-grid" class="palette-grid"></div>
+                </div>
+
+                <!-- Submit button -->
+                <div class="p-3 md:p-4 border-t border-gray-100 bg-white shrink-0">
+                    <button id="btn-submit-main" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-black rounded-xl shadow-lg shadow-emerald-500/25 transition-all text-sm tracking-wide">
+                        <i class="fas fa-paper-plane mr-2"></i>SUBMIT EXAM
+                    </button>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════
+         SCREEN 4: RESULTS
+    ══════════════════════════════════════════════ -->
+    <div id="screen-result" class="hidden absolute inset-0 bg-gray-50 z-50 overflow-y-auto w-full h-full custom-scroll">
+        <div class="max-w-5xl mx-auto p-4 md:p-8 pb-16">
+
+            <!-- Results header -->
+            <div class="text-center mb-8 animate-fade-in-down">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl shadow-lg shadow-blue-500/30 mb-4">
+                    <i class="fas fa-chart-bar text-white text-2xl"></i>
+                </div>
+                <h2 class="text-2xl md:text-4xl font-black text-gray-900 mb-2">Exam Results</h2>
+                <p class="text-gray-500 text-sm" id="result-paper-title">JEE Mock Test</p>
+            </div>
+
+            <!-- Score cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <div class="result-stat-card result-stat-score bg-white border border-blue-100 shadow-sm shadow-blue-500/10">
+                    <div class="text-xs text-gray-400 font-bold uppercase tracking-wide mb-3">Total Score</div>
+                    <div class="text-4xl md:text-5xl font-black text-blue-600 mb-1" id="res-score">0</div>
+                    <div class="text-xs text-gray-400">out of <span class="font-bold text-gray-600" id="res-max-score">300</span></div>
+                    <div class="mt-3 w-full bg-blue-100 rounded-full h-1.5 overflow-hidden">
+                        <div id="score-bar" class="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-1000" style="width:0%"></div>
+                    </div>
+                </div>
+                <div class="result-stat-card result-stat-correct bg-white border border-green-100 shadow-sm">
+                    <div class="text-xs text-gray-400 font-bold uppercase tracking-wide mb-3">Correct</div>
+                    <div class="text-4xl md:text-5xl font-black text-green-600 mb-1" id="res-correct">0</div>
+                    <div class="text-xs text-green-500 font-medium">+4 marks each</div>
+                </div>
+                <div class="result-stat-card result-stat-wrong bg-white border border-red-100 shadow-sm">
+                    <div class="text-xs text-gray-400 font-bold uppercase tracking-wide mb-3">Incorrect</div>
+                    <div class="text-4xl md:text-5xl font-black text-red-500 mb-1" id="res-wrong">0</div>
+                    <div class="text-xs text-red-400 font-medium">−1 mark each</div>
+                </div>
+            </div>
+
+            <!-- Results table -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-8">
+                <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+                    <i class="fas fa-list-alt text-gray-400"></i>
+                    <h3 class="font-bold text-gray-800">Question-wise Breakdown</h3>
+                </div>
+                <div class="overflow-x-auto custom-scroll">
+                    <table class="w-full text-left border-collapse min-w-[500px]">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Q. No</th>
+                                <th class="px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Subject</th>
+                                <th class="px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Your Answer</th>
+                                <th class="px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Result</th>
+                            </tr>
+                        </thead>
+                        <tbody id="result-table-body" class="divide-y divide-gray-100 text-xs md:text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex flex-col sm:flex-row justify-center gap-3">
+                <button id="btn-retake" class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-blue-500/25 transition-all">
+                    <i class="fas fa-redo"></i> Retake Test
+                </button>
+                <button id="btn-home" class="inline-flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all">
+                    <i class="fas fa-home"></i> Go Home
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════
+         SCREEN 5: ADMIN DASHBOARD
+    ══════════════════════════════════════════════ -->
+    <div id="screen-admin" class="hidden absolute inset-0 z-50 flex flex-col w-full h-full">
+        <!-- Admin Top Navigation -->
+        <header class="bg-slate-900 border-b border-slate-800 px-5 py-3 flex items-center justify-between shrink-0 shadow-md">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md shadow-indigo-500/20">
+                    <i class="fas fa-shield-alt text-white text-sm"></i>
+                </div>
+                <div>
+                    <h1 class="text-white font-black text-base flex items-center gap-2">
+                        JEE Platform <span class="bg-indigo-500/20 text-indigo-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-indigo-500/30">ADMIN</span>
+                    </h1>
+                    <div class="flex items-center gap-2 mt-0.5">
+                        <span id="admin-fb-badge" class="badge-offline text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-current"></span> <span id="admin-fb-status">Local Fallback</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 md:gap-3">
+                <button id="btn-admin-seed" class="hidden md:inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-700 transition" title="Sync default mock papers to Firebase">
+                    <i class="fas fa-cloud-upload-alt text-blue-400"></i> Sync Papers
+                </button>
+                <button id="btn-admin-exit" class="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-lg transition shadow-md shadow-blue-500/20">
+                    <i class="fas fa-desktop"></i> Student View
+                </button>
+                <button id="btn-admin-logout" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition" title="Logout Admin">
+                    <i class="fas fa-sign-out-alt text-sm"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Admin Workspace Layout (Sidebar + Main Tabs) -->
+        <div class="flex flex-1 overflow-hidden">
+            <!-- Sidebar -->
+            <aside class="w-56 bg-slate-900/90 border-r border-slate-800 p-3 flex flex-col gap-1 shrink-0 overflow-y-auto custom-scroll">
+                <button data-admin-tab="overview" class="admin-sidebar-btn active">
+                    <i class="fas fa-chart-pie w-4 text-blue-400"></i> Overview
+                </button>
+                <button data-admin-tab="papers" class="admin-sidebar-btn">
+                    <i class="fas fa-file-alt w-4 text-indigo-400"></i> Paper Manager
+                </button>
+                <button data-admin-tab="students" class="admin-sidebar-btn">
+                    <i class="fas fa-users-cog w-4 text-pink-400"></i> Student Access
+                </button>
+                <button data-admin-tab="submissions" class="admin-sidebar-btn">
+                    <i class="fas fa-user-graduate w-4 text-emerald-400"></i> Submissions
+                </button>
+                <button data-admin-tab="violations" class="admin-sidebar-btn">
+                    <i class="fas fa-exclamation-triangle w-4 text-amber-400"></i> Security Logs
+                </button>
+                <button data-admin-tab="settings" class="admin-sidebar-btn">
+                    <i class="fas fa-cog w-4 text-slate-400"></i> Firebase & Config
+                </button>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="flex-1 overflow-y-auto custom-scroll p-4 md:p-6 bg-slate-950">
+
+                <!-- TAB 1: OVERVIEW -->
+                <div id="admin-view-overview" class="space-y-6">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-black text-white">Platform Analytics</h2>
+                        <span class="text-xs text-slate-400 font-medium">Real-time Overview</span>
+                    </div>
+
+                    <!-- Metrics Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="admin-stat-widget">
+                            <div class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Total Submissions</div>
+                            <div class="text-3xl font-black text-white" id="stat-total-subs">0</div>
+                            <div class="text-[11px] text-blue-400 mt-2 flex items-center gap-1">
+                                <i class="fas fa-check-double"></i> Completed Exams
+                            </div>
+                        </div>
+
+                        <div class="admin-stat-widget">
+                            <div class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Average Score</div>
+                            <div class="text-3xl font-black text-emerald-400" id="stat-avg-score">0 <span class="text-sm font-normal text-slate-400">/ 300</span></div>
+                            <div class="text-[11px] text-emerald-400 mt-2 flex items-center gap-1">
+                                <i class="fas fa-chart-line"></i> Overall Performance
+                            </div>
+                        </div>
+
+                        <div class="admin-stat-widget">
+                            <div class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Active Papers</div>
+                            <div class="text-3xl font-black text-indigo-400" id="stat-total-papers">10</div>
+                            <div class="text-[11px] text-indigo-400 mt-2 flex items-center gap-1">
+                                <i class="fas fa-book"></i> Mock Exam Sets
+                            </div>
+                        </div>
+
+                        <div class="admin-stat-widget">
+                            <div class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Security Flags</div>
+                            <div class="text-3xl font-black text-amber-400" id="stat-total-vios">0</div>
+                            <div class="text-[11px] text-amber-400 mt-2 flex items-center gap-1">
+                                <i class="fas fa-shield-alt"></i> Proctoring Alerts
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity Cards -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                        <div class="admin-card p-5">
+                            <h3 class="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                                <i class="fas fa-history text-blue-400"></i> Recent Test Attempts
+                            </h3>
+                            <div id="admin-recent-subs" class="space-y-2.5 text-xs text-slate-400">
+                                <div class="p-3 bg-slate-900/60 rounded-xl text-center text-slate-500">No test submissions yet.</div>
+                            </div>
+                        </div>
+
+                        <div class="admin-card p-5">
+                            <h3 class="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                                <i class="fas fa-bell text-amber-400"></i> Recent Security Incidents
+                            </h3>
+                            <div id="admin-recent-vios" class="space-y-2.5 text-xs text-slate-400">
+                                <div class="p-3 bg-slate-900/60 rounded-xl text-center text-slate-500">No security violations logged.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: PAPERS & QUESTION MANAGER -->
+                <div id="admin-view-papers" class="hidden space-y-6">
+                    <div class="flex items-center justify-between flex-wrap gap-3">
+                        <div>
+                            <h2 class="text-xl font-black text-white">Paper & Question Manager</h2>
+                            <p class="text-xs text-slate-400 mt-0.5">Create papers, edit questions, set per-question time limits & access</p>
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <button id="btn-admin-import-sheet" class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-md shadow-emerald-500/20">
+                                <i class="fas fa-file-excel"></i> Import from Google Sheets
+                            </button>
+                            <button id="btn-admin-add-paper" class="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-md shadow-blue-500/20">
+                                <i class="fas fa-plus"></i> New Paper
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Paper Picker for Question Management -->
+                    <div class="admin-card p-4 flex items-center justify-between flex-wrap gap-3">
+                        <div class="flex items-center gap-3">
+                            <label class="text-xs font-bold text-slate-400 uppercase">Select Paper:</label>
+                            <select id="admin-paper-select" class="bg-slate-900 border border-slate-700 text-white text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500 font-medium"></select>
+                            <span id="admin-paper-access-tag" class="badge-access-public text-[10px] font-bold px-2 py-0.5 rounded-full">PUBLIC</span>
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <button id="btn-admin-add-question" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition">
+                                <i class="fas fa-plus-circle"></i> Add Question
+                            </button>
+                            <button id="btn-admin-edit-paper" class="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold px-3 py-1.5 rounded-xl transition border border-slate-700">
+                                <i class="fas fa-cog"></i> Settings & Access
+                            </button>
+                            <button type="button" id="btn-admin-del-paper" class="inline-flex items-center gap-1.5 bg-red-950/40 hover:bg-red-900/60 text-red-300 text-xs font-semibold px-3 py-1.5 rounded-xl transition border border-red-800/40">
+                                <i class="fas fa-trash-alt"></i> Delete Paper
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Questions List Table -->
+                    <div class="admin-card overflow-hidden">
+                        <div class="p-4 border-b border-slate-800 flex items-center justify-between flex-wrap gap-2">
+                            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                <i class="fas fa-list text-indigo-400"></i> Questions (<span id="admin-question-count">0</span>) &bull; <span class="text-slate-400 text-xs font-normal" id="admin-calc-duration">Est. Duration: 180 min</span>
+                            </h3>
+                            <div class="flex items-center gap-2 text-xs">
+                                <select id="admin-subject-filter" class="bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-2 py-1 outline-none">
+                                    <option value="ALL">All Subjects</option>
+                                    <option value="Physics">Physics</option>
+                                    <option value="Chemistry">Chemistry</option>
+                                    <option value="Mathematics">Mathematics</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto custom-scroll max-h-[60vh]">
+                            <table class="w-full text-left admin-table">
+                                <thead>
+                                    <tr>
+                                        <th class="w-12">#</th>
+                                        <th class="w-24">Subject</th>
+                                        <th class="w-20">Type</th>
+                                        <th>Question Content</th>
+                                        <th class="w-20">Image</th>
+                                        <th class="w-24">Marks</th>
+                                        <th class="w-24">Target Time</th>
+                                        <th class="w-32">Answer</th>
+                                        <th class="w-24 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-questions-tbody" class="divide-y divide-slate-800/60"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: STUDENT ACCESS WHITELIST -->
+                <div id="admin-view-students" class="hidden space-y-6">
+                    <div class="flex items-center justify-between flex-wrap gap-3">
+                        <div>
+                            <h2 class="text-xl font-black text-white">Student Access Whitelist</h2>
+                            <p class="text-xs text-slate-400 mt-0.5">Control which students and roll numbers are eligible to write specific exams</p>
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <button id="btn-admin-import-students" class="inline-flex items-center gap-1.5 bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-md shadow-pink-500/20">
+                                <i class="fas fa-file-excel"></i> Import Students Sheet
+                            </button>
+                            <button id="btn-admin-add-student" class="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition">
+                                <i class="fas fa-user-plus"></i> Add Student
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="admin-card overflow-hidden">
+                        <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+                            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                <i class="fas fa-users text-pink-400"></i> Authorized Students (<span id="admin-student-count">0</span>)
+                            </h3>
+                            <button id="btn-clear-students" class="text-xs text-red-400 hover:text-red-300">Clear Whitelist</button>
+                        </div>
+                        <div class="overflow-x-auto custom-scroll max-h-[70vh]">
+                            <table class="w-full text-left admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Candidate ID / Roll No</th>
+                                        <th>Student Name</th>
+                                        <th>Allowed Papers</th>
+                                        <th>Batch / Class</th>
+                                        <th>Contact / Email</th>
+                                        <th class="text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-students-tbody" class="divide-y divide-slate-800/60"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: SUBMISSIONS -->
+                <div id="admin-view-submissions" class="hidden space-y-6">
+                    <div class="flex items-center justify-between flex-wrap gap-3">
+                        <div>
+                            <h2 class="text-xl font-black text-white">Student Submissions</h2>
+                            <p class="text-xs text-slate-400 mt-0.5">Inspect, modify scores, and manage completed mock exams</p>
+                        </div>
+                        <button id="btn-export-submissions" class="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold px-3.5 py-2 rounded-xl transition border border-slate-700">
+                            <i class="fas fa-download text-emerald-400"></i> Export JSON
+                        </button>
+                    </div>
+
+                    <div class="admin-card overflow-hidden">
+                        <div class="overflow-x-auto custom-scroll max-h-[70vh]">
+                            <table class="w-full text-left admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Candidate ID</th>
+                                        <th>Paper</th>
+                                        <th>Score</th>
+                                        <th>Correct</th>
+                                        <th>Wrong</th>
+                                        <th>Submitted At</th>
+                                        <th class="text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-submissions-tbody" class="divide-y divide-slate-800/60"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 5: SECURITY VIOLATIONS -->
+                <div id="admin-view-violations" class="hidden space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-xl font-black text-white">Proctoring Security Logs</h2>
+                            <p class="text-xs text-slate-400 mt-0.5">Real-time record of exam rule infringements</p>
+                        </div>
+                        <button id="btn-clear-violations" class="inline-flex items-center gap-1.5 bg-red-950/40 hover:bg-red-900/60 text-red-300 text-xs font-semibold px-3 py-1.5 rounded-xl border border-red-800/50 transition">
+                            <i class="fas fa-trash-alt"></i> Clear Logs
+                        </button>
+                    </div>
+
+                    <div class="admin-card overflow-hidden">
+                        <div class="overflow-x-auto custom-scroll max-h-[70vh]">
+                            <table class="w-full text-left admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Candidate ID</th>
+                                        <th>Paper</th>
+                                        <th>Violation Type</th>
+                                        <th>Warnings Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-violations-tbody" class="divide-y divide-slate-800/60"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 6: SETTINGS & FIREBASE CONFIG -->
+                <div id="admin-view-settings" class="hidden space-y-6 max-w-3xl">
+                    <div>
+                        <h2 class="text-xl font-black text-white">Firebase & Backend Settings</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Configure Firestore database connection credentials</p>
+                    </div>
+
+                    <!-- Connection Card -->
+                    <div class="admin-card p-5">
+                        <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+                            <div>
+                                <h3 class="font-bold text-white text-sm">Firebase Connection Status</h3>
+                                <p class="text-xs text-slate-400 mt-0.5" id="fb-status-desc">Currently running with smart local storage fallback.</p>
+                            </div>
+                            <span id="fb-live-pill" class="badge-offline px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-current"></span> Offline / Local
+                            </span>
+                        </div>
+
+                        <form id="form-firebase-config" class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Project ID</label>
+                                    <input type="text" id="fb-cfg-project" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500 font-mono" placeholder="my-jee-project">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">API Key</label>
+                                    <input type="password" id="fb-cfg-key" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500 font-mono" placeholder="AIzaSy...">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Auth Domain</label>
+                                    <input type="text" id="fb-cfg-auth" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500 font-mono" placeholder="project.firebaseapp.com">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Storage Bucket</label>
+                                    <input type="text" id="fb-cfg-bucket" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500 font-mono" placeholder="project.appspot.com">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Messaging Sender ID</label>
+                                    <input type="text" id="fb-cfg-sender" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500 font-mono" placeholder="123456789">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">App ID</label>
+                                    <input type="text" id="fb-cfg-app" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500 font-mono" placeholder="1:12345:web:abc">
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between pt-2">
+                                <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition shadow-md shadow-blue-500/25">
+                                    <i class="fas fa-save mr-1.5"></i> Save & Connect Firebase
+                                </button>
+                                <button type="button" id="btn-admin-reset-local" class="text-xs text-slate-400 hover:text-slate-200">
+                                    Clear & Use Local Storage
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Admin Security PIN -->
+                    <div class="admin-card p-5">
+                        <h3 class="font-bold text-white text-sm mb-1">Admin Passcode Settings</h3>
+                        <p class="text-xs text-slate-400 mb-3">Change the security PIN used to log into this admin console (Default: <code class="text-blue-400">admin123</code>)</p>
+                        <div class="flex gap-2 max-w-sm">
+                            <input type="password" id="admin-new-pin" class="bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500 flex-1 font-mono" placeholder="New Passcode">
+                            <button id="btn-save-admin-pin" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs rounded-xl border border-slate-700 transition">Update PIN</button>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════
+         ADMIN & STUDENT MODALS
+    ══════════════════════════════════════════════ -->
+
+    <!-- Candidate ID Prompt / Switcher Modal -->
+    <div id="modal-candidate-id" class="hidden fixed inset-0 z-[95] flex items-center justify-center p-4 modal-backdrop bg-black/80">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-scale-in text-white">
+            <div class="w-12 h-12 bg-blue-500/20 text-blue-400 rounded-xl flex items-center justify-center mb-3 mx-auto">
+                <i class="fas fa-id-card text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-black text-center mb-1">Candidate Identity</h3>
+            <p class="text-slate-400 text-xs text-center mb-4">Enter your Candidate Roll No / Student ID to verify access & record exam submissions.</p>
+            <form id="form-candidate-id" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Candidate Roll Number / ID</label>
+                    <input type="text" id="input-candidate-id" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white outline-none focus:border-blue-500 font-mono tracking-wider text-center uppercase" placeholder="e.g. JEE2026-001" required>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" id="btn-cancel-candidate-id" class="flex-1 py-2.5 text-xs font-semibold text-slate-400 bg-slate-800 hover:bg-slate-700 rounded-xl transition">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition shadow-lg shadow-blue-500/25">
+                        Save ID
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Paper Access PIN Verification Modal -->
+    <div id="modal-paper-access" class="hidden fixed inset-0 z-[95] flex items-center justify-center p-4 modal-backdrop bg-black/85">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-scale-in text-white">
+            <div class="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-xl flex items-center justify-center mb-3 mx-auto">
+                <i class="fas fa-key text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-black text-center mb-1">Exam Passcode Required</h3>
+            <p class="text-slate-400 text-xs text-center mb-4" id="paper-access-msg">This mock exam is passcode protected. Please enter the access code provided by your instructor.</p>
+            <form id="form-paper-access" class="space-y-4">
+                <input type="hidden" id="access-target-paper-id" value="">
+                <div>
+                    <input type="password" id="input-paper-access-pin" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white outline-none focus:border-blue-500 font-mono tracking-widest text-center" placeholder="••••••••" required>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" id="btn-cancel-paper-access" class="flex-1 py-2.5 text-xs font-semibold text-slate-400 bg-slate-800 hover:bg-slate-700 rounded-xl transition">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 py-2.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl transition shadow-lg shadow-amber-500/25">
+                        Unlock Exam
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Google Sheets & CSV Paper Import Modal -->
+    <div id="modal-sheet-import" class="hidden fixed inset-0 z-[90] flex items-center justify-center p-4 modal-backdrop bg-black/85">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl animate-scale-in text-white overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/80">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-file-excel text-emerald-400 text-lg"></i>
+                    <h3 class="font-bold text-base">Import Paper from Google Sheets / CSV</h3>
+                </div>
+                <button id="btn-close-sheet-import" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">&times;</button>
+            </div>
+
+            <div class="p-5 overflow-y-auto custom-scroll flex-1 space-y-4">
+                <!-- Template Guide & Actions -->
+                <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+                        <div class="text-xs font-bold text-emerald-400 uppercase tracking-wide flex items-center gap-1.5">
+                            <i class="fas fa-table"></i> Google Sheets Column Structure
+                        </div>
+                        <div class="flex gap-2">
+                            <button id="btn-copy-sheet-template" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition">
+                                <i class="fas fa-copy mr-1 text-blue-400"></i> Copy Sample Data
+                            </button>
+                            <button id="btn-dl-sheet-template" class="px-3 py-1 bg-emerald-700/60 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition">
+                                <i class="fas fa-download mr-1"></i> Download CSV Template
+                            </button>
+                        </div>
+                    </div>
+                    <div class="sheet-template-box mb-2">Subject	Type	Section	Question	OptionA	OptionB	OptionC	OptionD	CorrectAnswer	TimeSeconds	ImageURL	MarksCorrect	MarksNegative
+Physics	MCQ	Section A	If force $F = ma$, what is the dimension of force?	$[MLT^{-2}]$	$[MLT^{-1}]$	$[ML^2T^{-2}]$	$[M^0LT^{-2}]$	$[MLT^{-2}]$	120	https://i.imgur.com/example.png	4	-1
+Physics	NUMERICAL	Section B	Calculate value of $\int_0^2 x^2 dx$ to nearest integer.						3	150		4	-1
+Chemistry	MCQ	Section A	Which of the following has highest electronegativity?	Fluorine	Chlorine	Bromine	Iodine	Fluorine	90		4	-1
+Mathematics	MCQ	Section A	Find roots of $x^2 - 5x + 6 = 0$.	$x=2, 3$	$x=1, 6$	$x=-2, -3$	$x=0, 5$	$x=2, 3$	150		4	-1</div>
+                    <p class="text-[11px] text-slate-400">Simply copy rows directly from your Google Sheet or Excel and paste into the box below. Supports image links (ImageURL) and custom marks (MarksCorrect, MarksNegative). Tab-separated, comma-separated (CSV), and semicolon formats are automatically detected.</p>
+                </div>
+
+                <!-- Paper Target Details -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Assign to Paper ID</label>
+                        <input type="number" id="sheet-target-paper-id" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500 font-mono font-bold" value="1" min="1" max="100">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Paper Title</label>
+                        <input type="text" id="sheet-target-title" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500" placeholder="e.g. JEE Mains 2026 Full Test (Imported)">
+                    </div>
+                </div>
+
+                <!-- Paste Box -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Paste Google Sheets / CSV Content</label>
+                    <textarea id="sheet-paste-area" rows="6" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-white outline-none focus:border-blue-500 font-mono" placeholder="Paste copied cells from Google Sheets here..."></textarea>
+                </div>
+
+                <!-- Parser Status & Preview -->
+                <div id="sheet-parse-status" class="hidden p-3 rounded-xl text-xs font-medium"></div>
+            </div>
+
+            <div class="p-4 border-t border-slate-800 bg-slate-900/90 flex justify-between items-center">
+                <button type="button" id="btn-parse-sheet" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl transition">
+                    <i class="fas fa-sync-alt mr-1"></i> Preview & Validate
+                </button>
+                <div class="flex gap-2">
+                    <button type="button" id="btn-cancel-sheet-import" class="px-4 py-2 text-xs font-semibold text-slate-400 bg-slate-800 hover:bg-slate-700 rounded-xl transition">
+                        Cancel
+                    </button>
+                    <button type="button" id="btn-save-sheet-import" class="px-6 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition shadow-md shadow-emerald-500/25">
+                        <i class="fas fa-cloud-upload-alt mr-1.5"></i> Save Paper to Firestore
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Google Sheets & CSV Student Whitelist Import Modal -->
+    <div id="modal-student-import" class="hidden fixed inset-0 z-[90] flex items-center justify-center p-4 modal-backdrop bg-black/85">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-3xl max-h-[92vh] flex flex-col shadow-2xl animate-scale-in text-white overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/80">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-users text-pink-400 text-lg"></i>
+                    <h3 class="font-bold text-base">Import Students from Google Sheets / CSV</h3>
+                </div>
+                <button id="btn-close-student-import" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">&times;</button>
+            </div>
+
+            <div class="p-5 overflow-y-auto custom-scroll flex-1 space-y-4">
+                <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+                        <div class="text-xs font-bold text-pink-400 uppercase tracking-wide flex items-center gap-1.5">
+                            <i class="fas fa-table"></i> Student Access Whitelist Format
+                        </div>
+                        <button id="btn-copy-student-template" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition">
+                            <i class="fas fa-copy mr-1 text-pink-400"></i> Copy Sample Data
+                        </button>
+                    </div>
+                    <div class="sheet-template-box mb-2">CandidateID	CandidateName	AllowedPapers	Batch	Email
+JEE2026-001	Rahul Sharma	ALL	Batch-A	rahul@example.com
+JEE2026-002	Priya Patel	1,2,3	Batch-A	priya@example.com
+JEE2026-003	Amit Verma	1	Batch-B	amit@example.com</div>
+                    <p class="text-[11px] text-slate-400">AllowedPapers can be <code>ALL</code> or comma-separated paper numbers (e.g. <code>1,2,3</code>).</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Paste Student Whitelist Cells</label>
+                    <textarea id="student-paste-area" rows="6" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-white outline-none focus:border-blue-500 font-mono" placeholder="Paste candidate rows from Google Sheets..."></textarea>
+                </div>
+
+                <div id="student-parse-status" class="hidden p-3 rounded-xl text-xs font-medium"></div>
+            </div>
+
+            <div class="p-4 border-t border-slate-800 bg-slate-900/90 flex justify-end gap-2">
+                <button type="button" id="btn-cancel-student-import" class="px-4 py-2 text-xs font-semibold text-slate-400 bg-slate-800 hover:bg-slate-700 rounded-xl transition">
+                    Cancel
+                </button>
+                <button type="button" id="btn-save-student-import" class="px-6 py-2 text-xs font-bold text-white bg-pink-600 hover:bg-pink-700 rounded-xl transition shadow-md shadow-pink-500/25">
+                    Save Whitelist to Firestore
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Whitelist Editor Modal -->
+    <div id="modal-student-editor" class="hidden fixed inset-0 z-[85] flex items-center justify-center p-4 modal-backdrop bg-black/80">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl animate-scale-in text-white">
+            <h3 class="text-base font-bold mb-4 flex items-center gap-2">
+                <i class="fas fa-user-plus text-pink-400"></i> <span id="st-modal-title">Add Student to Whitelist</span>
+            </h3>
+            <form id="form-student-editor" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Candidate Roll Number / ID</label>
+                    <input type="text" id="st-candidate-id" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500 font-mono uppercase" placeholder="e.g. JEE2026-001" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Student Name</label>
+                    <input type="text" id="st-name" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500" placeholder="Full Name">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Allowed Papers (ALL or 1,2,3)</label>
+                    <input type="text" id="st-papers" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500 font-mono" value="ALL" required>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Batch / Class</label>
+                        <input type="text" id="st-batch" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500" placeholder="Batch A">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Email / Phone</label>
+                        <input type="text" id="st-email" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500" placeholder="Optional">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-3">
+                    <button type="button" id="btn-cancel-st" class="px-4 py-2 text-xs font-semibold text-slate-400 bg-slate-800 hover:bg-slate-700 rounded-xl transition">
+                        Cancel
+                    </button>
+                    <button type="submit" id="btn-save-single-student" class="px-6 py-2 text-xs font-bold text-white bg-pink-600 hover:bg-pink-700 rounded-xl transition shadow-md shadow-pink-500/25">
+                        Save Student
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Result Editor / Modifier Modal -->
+    <div id="modal-result-editor" class="hidden fixed inset-0 z-[85] flex items-center justify-center p-4 modal-backdrop bg-black/80">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl animate-scale-in text-white">
+            <h3 class="text-base font-bold mb-4 flex items-center gap-2">
+                <i class="fas fa-edit text-blue-400"></i> Modify Exam Result
+            </h3>
+            <form id="form-result-editor" class="space-y-3">
+                <input type="hidden" id="res-edit-id" value="">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Candidate</label>
+                    <input type="text" id="res-edit-candidate" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-300 font-mono" readonly>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Total Score</label>
+                        <input type="number" id="res-edit-score" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-emerald-400 outline-none focus:border-blue-500 font-bold font-mono" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Correct Qs</label>
+                        <input type="number" id="res-edit-correct" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500 font-mono" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Wrong Qs</label>
+                        <input type="number" id="res-edit-wrong" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500 font-mono" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Admin Notes / Remarks</label>
+                    <input type="text" id="res-edit-notes" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500" placeholder="e.g. Adjusted after re-evaluation">
+                </div>
+                <div class="flex justify-end gap-2 pt-3">
+                    <button type="button" id="btn-cancel-res-edit" class="px-4 py-2 text-xs font-semibold text-slate-400 bg-slate-800 hover:bg-slate-700 rounded-xl transition">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition shadow-md shadow-blue-500/25">
+                        Save Result
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Auth Modal -->
+    <div id="modal-admin-auth" class="hidden fixed inset-0 z-[90] flex items-center justify-center p-4 modal-backdrop bg-black/75">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-scale-in text-white">
+            <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-4 mx-auto shadow-lg shadow-blue-500/30">
+                <i class="fas fa-user-shield text-white text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-black text-center mb-1">Admin Portal Access</h3>
+            <p class="text-slate-400 text-xs text-center mb-5">Enter your passcode to manage exams & view results.</p>
+            <form id="form-admin-auth" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Passcode</label>
+                    <input type="password" id="admin-auth-pass" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white outline-none focus:border-blue-500 font-mono tracking-widest text-center" placeholder="••••••••" required>
+                    <p class="text-[10px] text-slate-500 text-center mt-1.5">Default demo code: <code class="text-blue-400">admin123</code></p>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" id="btn-cancel-admin-auth" class="flex-1 py-2.5 text-xs font-semibold text-slate-400 bg-slate-800 hover:bg-slate-700 rounded-xl transition">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition shadow-lg shadow-blue-500/25">
+                        Login
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Question Editor Modal with Live KaTeX Preview & Target Time -->
+    <div id="modal-question-editor" class="hidden fixed inset-0 z-[85] flex items-center justify-center p-4 modal-backdrop bg-black/80">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl animate-scale-in text-white overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/80">
+                <h3 class="font-bold text-base flex items-center gap-2">
+                    <i class="fas fa-edit text-indigo-400"></i> <span id="qe-modal-title">Edit Question</span>
+                </h3>
+                <button id="btn-close-qe" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">
+                    &times;
+                </button>
+            </div>
+
+            <div class="p-5 overflow-y-auto custom-scroll flex-1 space-y-4">
+                <input type="hidden" id="qe-edit-index" value="-1">
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Subject</label>
+                        <select id="qe-subject" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500 font-medium">
+                            <option value="Physics">Physics</option>
+                            <option value="Chemistry">Chemistry</option>
+                            <option value="Mathematics">Mathematics</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Type</label>
+                        <select id="qe-type" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500 font-medium">
+                            <option value="MCQ">MCQ (Single Correct)</option>
+                            <option value="NUMERICAL">Numerical (Integer/Decimal)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Section</label>
+                        <select id="qe-section" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500 font-medium">
+                            <option value="Section A">Section A</option>
+                            <option value="Section B">Section B</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Target Time (Sec)</label>
+                        <input type="number" id="qe-time-sec" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500 font-mono font-bold" value="120" min="10" max="900">
+                    </div>
+                </div>
+
+                <!-- Marks & Image Row -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-emerald-400 uppercase mb-1"><i class="fas fa-plus-circle mr-1"></i>Correct Marks</label>
+                        <input type="number" id="qe-marks-correct" step="0.5" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-emerald-300 outline-none focus:border-emerald-500 font-mono font-bold" value="4" min="0" max="100" placeholder="e.g. 4">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-red-400 uppercase mb-1"><i class="fas fa-minus-circle mr-1"></i>Negative Marks</label>
+                        <input type="number" id="qe-marks-negative" step="0.5" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-red-300 outline-none focus:border-red-500 font-mono font-bold" value="-1" max="0" placeholder="e.g. -1">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-sky-400 uppercase mb-1"><i class="fas fa-image mr-1"></i>Image URL (optional)</label>
+                        <input type="url" id="qe-image-url" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-sky-300 outline-none focus:border-sky-500 font-mono" placeholder="https://i.imgur.com/example.png">
+                    </div>
+                </div>
+
+                <!-- Image Preview -->
+                <div id="qe-image-preview-wrap" class="hidden">
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Image Preview</label>
+                    <img id="qe-image-preview" src="" alt="Question Image" class="max-h-40 rounded-xl border border-slate-700 object-contain bg-slate-950">
+                </div>
+
+                <!-- Question Text (supports LaTeX & HTML) -->
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="text-xs font-bold text-slate-400 uppercase">Question Content (LaTeX: $x^2$ or \(x^2\))</label>
+                        <span class="text-[10px] text-blue-400">Live KaTeX Supported</span>
+                    </div>
+                    <textarea id="qe-content" rows="3" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-white outline-none focus:border-blue-500 font-mono" placeholder="Enter question description. You can use LaTeX math like \(\int_0^1 x dx\) or HTML tags..."></textarea>
+                </div>
+
+                <!-- Live Preview Box -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Live Render Preview</label>
+                    <div id="qe-preview-box" class="katex-preview-box text-sm text-slate-200">Type in content above to see live math formatting...</div>
+                </div>
+
+                <!-- Options Editor (for MCQ) -->
+                <div id="qe-options-container" class="space-y-2">
+                    <label class="block text-xs font-bold text-slate-400 uppercase">Options (MCQ)</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400 shrink-0">A</span>
+                            <input type="text" id="qe-opt-0" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-blue-500" placeholder="Option A">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400 shrink-0">B</span>
+                            <input type="text" id="qe-opt-1" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-blue-500" placeholder="Option B">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400 shrink-0">C</span>
+                            <input type="text" id="qe-opt-2" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-blue-500" placeholder="Option C">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400 shrink-0">D</span>
+                            <input type="text" id="qe-opt-3" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-blue-500" placeholder="Option D">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Correct Answer -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Correct Answer</label>
+                    <input type="text" id="qe-answer" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500 font-bold font-mono" placeholder="For MCQ: enter matching option text exactly. For Numerical: enter the numerical value.">
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-slate-800 bg-slate-900/90 flex justify-end gap-2">
+                <button type="button" id="btn-cancel-qe" class="px-4 py-2 text-xs font-semibold text-slate-400 bg-slate-800 hover:bg-slate-700 rounded-xl transition">
+                    Cancel
+                </button>
+                <button type="button" id="btn-save-qe" class="px-6 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition shadow-md shadow-blue-500/25">
+                    Save Question
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paper Config & Access Control Modal -->
+    <div id="modal-paper-editor" class="hidden fixed inset-0 z-[85] flex items-center justify-center p-4 modal-backdrop bg-black/80">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl animate-scale-in text-white max-h-[92vh] overflow-y-auto custom-scroll">
+            <h3 class="text-base font-bold mb-4 flex items-center gap-2">
+                <i class="fas fa-file-invoice text-blue-400"></i> <span id="pe-modal-title">Paper Settings & Access Control</span>
+            </h3>
+            <form id="form-paper-editor" class="space-y-4">
+                <input type="hidden" id="pe-paper-id" value="">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Paper Title</label>
+                    <input type="text" id="pe-title" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500 font-medium" placeholder="JEE Mock Paper 1" required>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Duration (Minutes)</label>
+                        <input type="number" id="pe-duration" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500 font-mono font-bold" value="180" min="10" max="360" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Paper Number ID</label>
+                        <input type="number" id="pe-num-id" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500 font-mono font-bold" value="1" min="1" max="100" required>
+                    </div>
+                </div>
+
+                <!-- Default Marking Scheme -->
+                <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-3.5">
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-2 flex items-center gap-1.5">
+                        <i class="fas fa-star-half-alt text-amber-400"></i> Default Marking Scheme
+                        <span class="text-[10px] text-slate-500 font-normal ml-1">(applied to all questions without custom marks)</span>
+                    </label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-emerald-400 uppercase mb-1"><i class="fas fa-plus-circle mr-1"></i>Correct Answer Marks</label>
+                            <input type="number" id="pe-marks-correct" step="0.5" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-emerald-300 outline-none focus:border-emerald-500 font-mono font-bold" value="4" min="0" max="100">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-red-400 uppercase mb-1"><i class="fas fa-minus-circle mr-1"></i>Wrong Answer Marks</label>
+                            <input type="number" id="pe-marks-negative" step="0.5" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-red-300 outline-none focus:border-red-500 font-mono font-bold" value="-1" max="0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Access Restrictions -->
+                <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5 space-y-3">
+                    <label class="block text-xs font-bold text-amber-400 uppercase flex items-center gap-1.5">
+                        <i class="fas fa-shield-alt"></i> Who Can Write This Exam?
+                    </label>
+                    <div>
+                        <select id="pe-access-mode" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500 font-medium">
+                            <option value="PUBLIC">Public — Open to all candidates</option>
+                            <option value="PIN_PROTECTED">Passcode Protected — Requires PIN to start</option>
+                            <option value="WHITELIST">Candidate Whitelist — Only authorized Student IDs</option>
+                        </select>
+                    </div>
+
+                    <div id="pe-pin-field" class="hidden">
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Exam Passcode / PIN</label>
+                        <input type="text" id="pe-access-pin" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-blue-500 font-mono" placeholder="e.g. EXAM2026">
+                    </div>
+
+                    <div id="pe-whitelist-field" class="hidden">
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Allowed Candidate IDs (comma separated)</label>
+                        <textarea id="pe-whitelist-ids" rows="2" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-blue-500 font-mono" placeholder="JEE2026-001, JEE2026-002, BATCH-A"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" id="btn-cancel-pe" class="px-4 py-2 text-xs font-semibold text-slate-400 bg-slate-800 hover:bg-slate-700 rounded-xl transition">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition shadow-md shadow-blue-500/25">
+                        Save Paper
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Submission Details Modal -->
+    <div id="modal-submission-view" class="hidden fixed inset-0 z-[90] flex items-center justify-center p-4 modal-backdrop bg-black/80">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl animate-scale-in text-white overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/80">
+                <div>
+                    <h3 class="font-bold text-base" id="sub-view-candidate">Candidate Test Attempt</h3>
+                    <p class="text-xs text-slate-400" id="sub-view-meta">Paper 1 &bull; Score: 240/300</p>
+                </div>
+                <button id="btn-close-sub-view" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">
+                    &times;
+                </button>
+            </div>
+            <div class="p-5 overflow-y-auto custom-scroll flex-1">
+                <div id="sub-view-answers" class="space-y-3 text-xs"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════
+         MODALS
+    ══════════════════════════════════════════════ -->
+
+    <!-- Orientation overlay -->
+    <div id="orientation-overlay" class="hidden fixed inset-0 z-[100] bg-slate-900 flex flex-col items-center justify-center text-white p-6 text-center">
+        <div class="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center mb-6">
+            <i class="fas fa-rotate-right text-4xl animate-spin-slow text-blue-400"></i>
+        </div>
+        <h2 class="text-2xl font-black mb-2">Rotate Device</h2>
+        <p class="text-slate-400 text-sm max-w-xs">Landscape mode is required for the optimal exam experience.</p>
+    </div>
+
+    <!-- Calculator modal -->
+    <div id="calc-modal" class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-900 rounded-2xl w-72 z-[60] border border-white/10 touch-none overflow-hidden">
+        <div id="calc-header" class="bg-gray-800 px-4 py-3 flex justify-between items-center cursor-move border-b border-white/5">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-calculator text-blue-400 text-xs"></i>
+                <span class="text-xs text-gray-300 font-semibold">Scientific Calculator</span>
+            </div>
+            <button id="btn-close-calc" class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-white rounded-md hover:bg-white/10 transition">
+                <i class="fas fa-times text-xs"></i>
+            </button>
+        </div>
+        <div class="p-4">
+            <input type="text" id="calc-display" readonly
+                   class="w-full bg-gray-800 border border-white/10 text-right text-2xl font-mono p-3 mb-3 rounded-xl text-white tracking-wider"
+                   value="0">
+            <div class="grid grid-cols-4 gap-1.5" id="calc-keys"></div>
+        </div>
+    </div>
+
+    <!-- Question paper modal -->
+    <div id="modal-qp" class="hidden fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4 modal-backdrop">
+        <div class="bg-white rounded-2xl w-full max-w-5xl h-[90vh] flex flex-col shadow-2xl animate-scale-in">
+            <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-file-alt text-blue-500"></i>
+                    <h3 class="font-black text-gray-800">Full Question Paper</h3>
+                </div>
+                <button id="btn-close-qp" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition text-lg font-bold">
+                    &times;
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1 custom-scroll" id="qp-content"></div>
+        </div>
+    </div>
+
+    <!-- Submit confirmation modal -->
+    <div id="modal-submit" class="hidden fixed inset-0 bg-black/60 z-[70] flex items-center justify-center modal-backdrop p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-scale-in">
+            <div class="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center mb-4 mx-auto">
+                <i class="fas fa-paper-plane text-amber-500 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-black text-center mb-2 text-gray-900">Submit Exam?</h3>
+            <p class="text-gray-500 text-sm text-center mb-6">You cannot change your answers after submitting. Are you sure?</p>
+            <div class="flex gap-3">
+                <button id="btn-cancel-submit" class="flex-1 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition">
+                    Cancel
+                </button>
+                <button id="btn-confirm-submit" class="flex-1 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-500/25 transition">
+                    Submit
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warning / security violation modal -->
+    <div id="modal-warning" class="hidden fixed inset-0 bg-red-950/90 z-[80] flex items-center justify-center modal-backdrop p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl text-center border-4 border-red-500 animate-scale-in">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+                <i class="fas fa-exclamation-triangle text-red-600 text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-black mb-2 text-red-700">Security Violation</h3>
+            <p class="text-gray-600 text-sm mb-4">Activity outside the exam environment was detected.</p>
+            <div class="bg-red-50 border border-red-200 p-3 rounded-xl mb-5">
+                <p class="text-red-800 font-black text-lg">
+                    Warnings: <span id="warning-count" class="text-red-600">0</span>
+                    <span class="text-gray-400 font-normal text-sm"> / 3</span>
+                </p>
+            </div>
+            <button id="btn-resume-warning" class="w-full px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl font-bold shadow-lg shadow-red-500/25 transition">
+                <i class="fas fa-arrow-left mr-2"></i>Return to Exam
+            </button>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div id="lightbox-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center">
+        <img id="lightbox-img" src="" alt="Question Image" class="rounded-xl shadow-2xl max-w-[95vw] max-h-[85vh] object-contain">
+        <button id="btn-close-lightbox" class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center text-white text-2xl bg-black/50 rounded-full hover:bg-black/70 transition">
+            &times;
+        </button>
+    </div>
+
+</div>
+
+<!-- Scripts loaded at bottom of body for correct DOM timing -->
+<script src="scripts/firebase-config.js" defer></script>
+<script src="scripts/script.js" defer></script>
+</body>
+</html>
